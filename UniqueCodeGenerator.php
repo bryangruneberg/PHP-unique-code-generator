@@ -114,7 +114,7 @@ class UniqueCodeGenerator {
         fclose($fp);
 
         echo "\n$writes codes were generated.\n";
-        echo "$count new codes written to file $file.\n\n";
+        echo "$count  codes written to file $file.\n\n";
         return;
     }
 
@@ -170,10 +170,10 @@ class UniqueCodeGenerator {
         echo 'Existing codes: '.$current_codes."\n";        
         
         $possible = true;
-        if ( $possible_secure - $current_codes < $count ) {
+        if ( $possible_secure < $count ) {
             $possible = false;
         }
-        echo 'Can '.($possible ? '' : 'not ').'generate '.$count.' new codes.'."\n";
+        echo 'Can '.($possible ? '' : 'not ').'generate '.$count.'  codes.'."\n";
         return $possible;
     }
 
