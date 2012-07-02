@@ -1,5 +1,21 @@
 <?php
 
+$options = array(
+     'db_host'       => 'localhost',
+     'db_name'       => 'somedsomedb',
+     'db_user'       => 'someuser',
+     'db_pass'       => 'somepass',
+     'db_table'      => 'sometable',
+     'charset'       => 'ACDEFGHJKMNPRTUVWXYZ234679'
+ );
+
+ $gen = new UniqueCodeGenerator($options);
+ $gen->generate(
+     1001000, // number of codes to generate
+     9,     // length of codes
+     dirname(__FILE__).'/out.csv' // output file
+ );
+
 /**
  * @class UniqueCodeGenerator
  * @author Darren Inwood, Chrometoaster New Media Ltd
@@ -66,19 +82,34 @@ class UniqueCodeGenerator {
         $writes = 0;
         
         // Generate... use while loop so we keep going till we have enough codes
-        while ( $this->count() < $existing + $count ) {
-            $new_code = $this->generate_code($length);
-            fputcsv($fp, array($new_code));
-            $sql = sprintf(
-                "INSERT INTO %s SET code = '%s'",
-                $this->options['db_table'],
-                $new_code
-            );
-            mysql_query($sql);
-            $writes++;
-            if ( $writes % 100 == 0 ) {
-                echo "$writes codes...\n";
-            }
+	$codes_left = $count - $existing;
+        while ( $codes_left > 0 ) {
+		print $codes_left . " left to generate and write \n";
+		if($codes_left < 100000) {
+		  $go_gen = $codes_left;
+		} else {
+		  $go_gen = 100000;
+		}
+
+	    $write_buffer = array();
+	    for($i = 0; $go_gen > 0 && $i < $go_gen; $i++) {
+              $new_code = $this->generate_code($length);
+	      $write_buffer[] = $new_code;
+	    }
+	    foreach($write_buffer as $new_code) {
+		    fputcsv($fp, array($new_code));
+		    $sql = sprintf(
+				    "INSERT INTO %s SET code = '%s'",
+				    $this->options['db_table'],
+				    $new_code
+				  );
+		    mysql_query($sql);
+		    $writes++;
+		    if ( $writes % 1000 == 0 ) {
+			    echo "$writes codes...\n";
+		    }
+	    }
+	   $codes_left = $count - $this->count();
         }
         fclose($fp);
 
@@ -151,7 +182,7 @@ class UniqueCodeGenerator {
      * @return (Integer) The current number of codes in the database.
      */
     private function count() {  
-        $sql = sprintf("SELECT COUNT(code) AS count FROM %s", $this->options['db_table']);
+        $sql = sprintf("SELECT COUNT(*) AS count FROM %s", $this->options['db_table']);
         $current_codes = mysql_fetch_array(mysql_query($sql));
         return (int)$current_codes['count'];
     }
