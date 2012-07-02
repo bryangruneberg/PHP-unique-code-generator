@@ -7,3 +7,4 @@ Original author: Darren Inwood, Chrometoaster New Media Ltd (lucidtone at gmail.
 
 Original source taken from http://code.google.com/p/unique-code-generator/
 
+Primary change is the inclusion of a write buffer that limits the number of calls to count() function. This may create some problems when duplicate codes are found, but this is acceptable for our requirements of creating a fuzzy total amount of cards.
